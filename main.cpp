@@ -25,6 +25,9 @@
 #define DEVICE_QSPI
 #include "LittleFileSystem.h"
 
+// To enable the sensors, uncomment the line below.
+//#define ENABLE_SENSORS
+
 #ifdef ENABLE_SENSORS
 #include "VL53L0X.h"
 // Workaround for compile error
