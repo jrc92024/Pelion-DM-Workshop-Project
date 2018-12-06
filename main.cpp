@@ -98,7 +98,7 @@ void update_sensors() {
     }
 
     // Output an empty line for visibility
-    printf("\n");
+    //printf("\n");
 }
 #endif /* ENABLE_SENSORS */
 
