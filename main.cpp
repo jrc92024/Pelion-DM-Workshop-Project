@@ -29,9 +29,6 @@
 //#define ENABLE_SENSORS
 
 #ifdef ENABLE_SENSORS
-#include "VL53L0X.h"
-// Workaround for compile error
-// SPI is defined in VL53L0X_i2c_platform.h
 #ifdef SPI
 #undef SPI
 #endif
@@ -57,7 +54,6 @@ LittleFileSystem fs("sd");
 MbedCloudClientResource *button_res;
 MbedCloudClientResource *pattern_res;
 #ifdef ENABLE_SENSORS
-MbedCloudClientResource *distance_res;
 MbedCloudClientResource *temperature_res;
 MbedCloudClientResource *humidity_res;
 #endif /* ENABLE_SENSORS */
@@ -79,25 +75,14 @@ void heartbeat(){
 
 #ifdef ENABLE_SENSORS
 static DevI2C devI2c(PB_11,PB_10);
-static DigitalOut shutdown_pin(PC_6);
-static VL53L0X range(&devI2c, &shutdown_pin, PC_7);
 static HTS221Sensor hum_temp(&devI2c);
 
 void update_sensors() {
-    // Distance sensor
-    uint32_t distance;
-    int status = range.get_distance(&distance);
-    if (status == VL53L0X_ERROR_NONE) {
-        distance_res->set_value((int)distance);
-        printf("VL53L0X [mm]:            %6ld\n", distance);
-    } else {
-        printf("VL53L0X [mm]:                --\n");
-    }    
 
     // Temperature sensor
     float temperature = 0.0;
     if(hum_temp.get_temperature(&temperature) == 0) {
-        printf("Temperature is %f degree.\n", temperature);
+        //printf("Temperature is %f degree.\n", temperature);
         temperature_res->set_value(temperature);
     } else {
         printf("Error: failed to read temperature.\n");
@@ -106,7 +91,7 @@ void update_sensors() {
     // Humidity sensor
     float humidity = 0.0;
     if(hum_temp.get_humidity(&humidity) == 0) {
-        printf("Humidity is %f %%.\n", humidity);
+        //printf("Humidity is %f %%.\n", humidity);
         humidity_res->set_value(humidity);
     } else {
         printf("Error: failed to read humidity.\n");
@@ -208,7 +193,6 @@ int main(void) {
     }
 
 #ifdef ENABLE_SENSORS
-    range.init_sensor(VL53L0X_DEFAULT_ADDRESS);
     hum_temp.init(NULL);
     hum_temp.enable();
 #endif /* ENABLE_SENSORS */
@@ -243,10 +227,6 @@ int main(void) {
     button_res->attach_notification_callback(button_callback);
 
 #ifdef ENABLE_SENSORS
-    distance_res = client.create_resource("3330/0/5700", "distance");
-    distance_res->set_value(0);
-    distance_res->methods(M2MMethod::GET);
-    distance_res->observable(true);
 
     temperature_res = client.create_resource("3303/0/5700", "temperature");
     temperature_res->set_value(0);
